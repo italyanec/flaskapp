@@ -3,12 +3,14 @@ import os
 from app import History
 from graph import Graph
 
-UPLOAD_FOLDER = "upload"
+UPLOAD_DIR = "upload"
+DB_DIR = "db"
+# создать папку если ее нет
 MAX_FILE_SIZE = 1024 * 1024
 
 app = Flask(__name__)
 
-hist = History('db/db.csv')
+hist = History(os.path.join(DB_DIR, 'db.csv'))
 
 @app.route("/", methods=["POST", "GET"])
 def index():
@@ -20,7 +22,7 @@ def index():
             args["file_size_error"] = len(file_bytes) == MAX_FILE_SIZE
             if not args["file_size_error"]:
                 filename = file.filename
-                fullpath = os.path.join(UPLOAD_FOLDER, filename)
+                fullpath = os.path.join(UPLOAD_DIR, filename)
                 file.save(fullpath)
                 hist.add(fullpath)
         args["method"] = "POST"
@@ -31,5 +33,8 @@ def index():
 
 @app.route("/graph")
 def graph():
+    print(request.args.get('id', 0))
     return Graph('sample.xlsx').to_visjs()
 
+if __name__ == "__main__":
+    app.run()#debug=True

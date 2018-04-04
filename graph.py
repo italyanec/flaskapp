@@ -12,8 +12,10 @@ class Graph:
         #self.G.add_edges_from(edges)
 
     def to_visjs(self):
-        struct = {'edges': self.edges, 'nodes': self.nodes}
-        return json.dumps(struct)
+        nodes = [{'id': i, 'label': i} for i in self.nodes]
+        edges = [{'from': i[0], 'to': i[1]} for i in self.edges]
+        data = {'nodes': nodes, 'edges': edges}
+        return json.dumps(data)
 
 if __name__ == "__main__":
 

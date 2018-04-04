@@ -13,10 +13,12 @@ class History:
             with open(dbpath, 'r') as db:
                 data = csv.reader(db, delimiter=',')
                 for idx, elem in enumerate(data):
-                    self.hist[idx+1] = (elem[0], elem[1])
-                    self.lastid = idx+1
+                    if elem:
+                        self.hist[idx+1] = (elem[0], elem[1])
+                        self.lastid = idx+1
         else:
             with open(dbpath, 'w') as file: pass
+            # создать каталог если его нет
 
     def add(self, filepath):
         filename = os.path.basename(filepath)
@@ -24,7 +26,7 @@ class History:
         time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.hist[self.lastid] = (time, filename)
         with open(self.dbpath, 'a') as file:
-            file.write(','.join(self.hist[self.lastid]) + '\r\n')
+            file.write(','.join(self.hist[self.lastid]) + '\n')
 
     def tolist(self):
         total = []

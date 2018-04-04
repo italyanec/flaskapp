@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <title>Тестовое задание</title>
   <script type="text/javascript" src="static/vis.js"></script>
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <style type="text/css">
     #mynetwork {
       width: 600px;
@@ -60,16 +60,20 @@
      <li>Здесь пока ничего нет</li>
    {% else %}
      {% for elem in hist %}
-     <li id="{{elem[0]}}">{{ elem[1] }} {{ elem[2] }}</li>
+     <li href="#" id="{{elem[0]}}">{{ elem[1] }} {{ elem[2] }}</li>
      {% endfor %}
    {% endif %}
  </ul>
  <script>
-   $('ul.ul_elements li').click(function() {
-      $.get("/graph", {'id' : $(this).attr('id')},
+ $(document).ready(function() {
+     $('ul.ul_elements li').click(function() {
+       //alert( $(this).attr('id'))
+       $.getJSON("/graph", {'id' : $(this).attr('id')},
             function(data) {
-      });
-  });
+                network.setData(data)
+       });
+     });
+ }); 
  </script>
  </body>
 </html>
