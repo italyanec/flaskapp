@@ -28,6 +28,12 @@ class History:
         with open(self.dbpath, 'a') as file:
             file.write(','.join(self.hist[self.lastid]) + '\n')
 
+    def __getitem__(self, key):
+        if key <= self.lastid:
+            return (self.hist[key][1], self.hist[key][0])
+        else:
+            raise KeyError
+
     def tolist(self):
         total = []
         for key, value in self.hist.items():
@@ -35,6 +41,7 @@ class History:
         return total
 
 if __name__ == "__main__":
-    hist = History('db/db2.csv', '../upload')
+    hist = History('db/db2.csv')
     hist.add('file3.ext')
+    print(hist[1])
     print(hist.tolist())

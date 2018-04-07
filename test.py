@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, url_for
 import os
 from app import History
 from graph import Graph
+import json
 
 UPLOAD_DIR = "upload"
 DB_DIR = "db"
@@ -33,8 +34,25 @@ def index():
 
 @app.route("/graph")
 def graph():
-    print(request.args.get('id', 0))
-    return Graph('sample.xlsx').to_visjs()
+    idx = int(request.args.get('id', 0))
+    print(idx)
+    if idx < 0 or not idx:
+        idx = hist.lastid
+
+    if not idx:
+        return json.dumps({})
+
+    try:
+        filename = hist[idx][0]
+    except KeyError:
+        raise Exception
+        #вернуть код ощтюбки
+    try:
+        g = Graph(filename)
+    except:
+        raise Exception
+        #вернуть код ощтюбки
+    return g.to_visjs()
 
 if __name__ == "__main__":
     app.run()#debug=True
