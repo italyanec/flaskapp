@@ -19,6 +19,7 @@ def index():
     if request.method == "POST":
         file = request.files["file"]
         if bool(file.filename):
+            print(file.filename)
             file_bytes = file.read(MAX_FILE_SIZE)
             args["file_size_error"] = len(file_bytes) == MAX_FILE_SIZE
             if not args["file_size_error"]:
@@ -53,6 +54,12 @@ def graph():
         raise Exception
         #вернуть код ощтюбки
     return g.to_visjs()
+
+@app.route("/upload", methods=["POST"])
+def upload():
+    file = request.files["file"]
+    print(file.filename)
+    return {}
 
 if __name__ == "__main__":
     app.run()#debug=True

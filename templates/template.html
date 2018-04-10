@@ -1,63 +1,162 @@
 <!--  --><!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <title>Тестовое задание</title>
   <script type="text/javascript" src="static/vis.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <style type="text/css">
+    html {
+      font-family: sans-serif;
+      border-top: 20px;
+    }
+
     #graph {
-      width: 600px;
+    outline-width: 3px;
+      width: 640px;
       height: 400px;
       border: 1px solid lightgray;
       vertical-align: middle;
+      margin-bottom: 10px
     }
+
+    #form {
+      width: 600px;
+      margin-left: 0;
+      padding: 20px;
+      border: 1px solid lightgray;
+      margin-bottom: 10px
+    }
+
+      form li, div > p {
+        background: white;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        list-style-type: none;
+        border: 1px solid black;
+      }
+      form p {
+        line-height: 32px;
+        padding-left: 10px;
+      }
+      form label, button {
+        background-color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        border: 1px ridge black;
+        font-size: 0.8rem;
+        height: auto;
+      }
+      form label:hover, button:hover {
+        background-color: gray;
+        color: white;
+      }
+      form label:active, button:active {
+        background-color: black;
+        color: white;
+      }
+      #history {
+        width: 600px;
+        border: 1px solid lightgray;
+        padding: 20px;
+      }
   </style>
  </head>
  <body>
  <div id="graph" align="center"></div>
-  {% if args["method"] == "POST" %}
-    {% if args["file_size_error"] %}
-      <h1>Размер файла превышает 1мб.!</h1>
-    {% else %}
-      <h1>Файл успешно загружен.</h1>
-    {% endif %}
-  {% endif %}
-  <form enctype="multipart/form-data" method="post">
-   <p><input type="file" name="file">
-   <input type="submit" value="Отправить"></p>
-  </form>
- <h1 id="hist">История загрузки:</h1>
+
+ <div id="form">
+ <form enctype="multipart/form-data" method="post">
+   <div>
+       <label for="image_uploads">Выберете файлы .xls, .xlsx</label>
+       <input type="file" id="image_uploads" name="image_uploads" accept=".xls, .xlsx">
+   </div>
+   <div class="preview">
+       <p>Нет выбранных файлов</p>
+   </div>
+ </form>
+ <button>Отправить</button>
+ </div>
+ <div id="history">
+ <p align="center">История загрузки:</p>
  <ul class="ul_elements">
    {% if hist|length < 1 %}
      <li>Здесь пока ничего нет</li>
    {% else %}
      {% for elem in hist %}
-     <li href="#" id="{{elem[0]}}">{{ elem[1] }} {{ elem[2] }}</li>
+     <li id="{{elem[0]}}">{{ elem[1] }} {{ elem[2] }}</li>
      {% endfor %}
    {% endif %}
  </ul>
+ </div>
  <script>
  $(document).ready(function() {
+
    var container = document.getElementById('graph');
    var network = new vis.Network(container, {}, {} );
    $.getJSON("/graph", {'id' : -1}, function(data){
      if (jQuery.isEmptyObject(data)) {
        $('#graph').text('Нет информации в базе данных!');
      } else {
-       //var container = document.getElementById('graph');
-       //var options = {};
-       //var network = new vis.Network(container, data, options);
        network.setData(data)
      }
    });
+   var input = document.querySelector('input');
+   var preview = document.querySelector('.preview');
+
+   input.style.visibility = 'hidden';
+
+   input.addEventListener('change', function() {
+     var curFiles = input.files;
+
+     if(curFiles.length === 0) {
+        preview.children[0].textContent = 'Файл не выбран';
+     } else {
+        preview.children[0].textContent = curFiles[0].name;
+     }
+   });
+
+   var submit = document.querySelector('button');
+   submit.addEventListener('click', function() {
+
+        var curFiles = input.files;
+
+        if (curFiles.length === 0) {
+            return;
+        }
+        if (curFiles.size > 1024*1024) {
+            preview.children[0].textContent = 'Размер файла превышает 1 МБ';
+            return;
+        }
+
+        var list = document.querySelector('ul');
+        var elem = document.createElement('li');
+        elem.textContent = 'newFile'
+        elem.setAttribute("id", "element4");
+        //list.appendChild(elem)
+        list.insertBefore(elem, list.children[0])
+
+        $.post('/upload', $('form').serialize(), function() {});
+        /*$.ajax({
+            data : $('form').serialize(),
+            type : 'POST',
+            url : '/upload',
+            contentType: false,
+            processData: false,
+            enctype: 'multipart/form-data',
+            dataType: 'json'
+        })*/
+
+
+   });
    $('ul.ul_elements li').click(function() {
        $.getJSON("/graph", {'id' : $(this).attr('id')}, function(data){
-         //if (jQuery.isEmptyObject(data)) {
-         //  $('#graph').text('Что-то пошло не так!');
-         //} else {
+         if (jQuery.isEmptyObject(data)) {
+           $('#graph').text('Нет информации в базе данных!');
+         } else {
            network.setData(data)
-         //}
+         }
        });
    });
  }); 
