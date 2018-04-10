@@ -38,7 +38,7 @@ class History:
         total = []
         for key, value in self.hist.items():
             total.append([key, value[0], value[1]])
-        return total
+        return total[::-1]
 
 if __name__ == "__main__":
     hist = History('db/db2.csv')

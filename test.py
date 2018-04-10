@@ -1,8 +1,6 @@
 import os
 import json
 
-import shutil
-
 from app import History
 from graph import Graph
 from flask import Flask, render_template, request, url_for
@@ -57,6 +55,12 @@ def upload():
     file.save(fullpath)
     hist.add(fullpath)
     return "OK"
+
+@app.route("/id")
+def getid():
+    print(hist[hist.lastid])
+    print('<li id="{}">{}</li>'.format(hist.lastid, ' '.join(hist[hist.lastid][::-1])))
+    return '<li id="{}">{}</li>'.format(hist.lastid, ' '.join(hist[hist.lastid][::-1]))
 
 
 def create_dir(root_dir):

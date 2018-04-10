@@ -36,7 +36,7 @@
         list-style-type: none;
         border: 1px solid black;
       }
-      form p {
+      form p, div p {
         line-height: 32px;
         padding-left: 10px;
       }
@@ -80,7 +80,7 @@
  </div>
  <div id="history">
  <p align="center">История загрузки:</p>
- <ul class="ul_elements">
+ <ul>
    {% if hist|length < 1 %}
      <li>Здесь пока ничего нет</li>
    {% else %}
@@ -92,6 +92,8 @@
  </div>
  <script>
  $(document).ready(function() {
+
+   selul = $('ul li')
 
    var container = document.getElementById('graph');
    var network = new vis.Network(container, {}, {} );
@@ -130,15 +132,6 @@
             return;
         }
 
-        var list = document.querySelector('ul');
-        var elem = document.createElement('li');
-        elem.textContent = 'newFile'
-        elem.setAttribute("id", "element4");
-        //list.appendChild(elem)
-        list.insertBefore(elem, list.children[0])
-
-
-
        var file = $('#image_uploads')[0].files[0];
        var formData = new FormData();
        formData.append("file", file);
@@ -146,18 +139,49 @@
         var request = new XMLHttpRequest();
         request.open("POST", "/upload");
         request.send(formData);
+        request.onreadystatechange = function() {
+          if (this.status == 200) {
+            if (this.readyState == 4) {
+                preview.children[0].textContent = 'Файл успешно загружен'
+                 $("form")[0].reset();
+                var request = new XMLHttpRequest();
+                request.open("GET", "/id", true);
+                request.send()
+                request.onreadystatechange = function() {
+                if (this.status == 200) {
+                    if (this.readyState == 4) {
+                        var list = document.querySelector('ul');
+                        $('ul').prepend(this.responseText);
+                        //var elem = document.createElement('li');
+                        //elem.textContent = 'ok'//this.responseText
+                        //elem.setAttribute("id", 54);
+                        //list.appendChild(elem)
+                        //list.insertBefore(elem, list.children[0])
+                        $('ul li').click(function() {
+                            $.getJSON("/graph", {'id' : $(this).attr('id')}, function(data){
+                                if (jQuery.isEmptyObject(data)) {
+                                    $('#graph').text('Нет информации в базе данных!');
+                                } else {
+                                    network.setData(data)
+                                }
+                            });
+                        });
+                    }
+                }}
+            }
+          }
+        }
    });
-
-   $('ul.ul_elements li').click(function() {
-       $.getJSON("/graph", {'id' : $(this).attr('id')}, function(data){
-         if (jQuery.isEmptyObject(data)) {
-           $('#graph').text('Нет информации в базе данных!');
-         } else {
-           network.setData(data)
-         }
-       });
-   });
- }); 
+$('ul li').click(function() {
+                            $.getJSON("/graph", {'id' : $(this).attr('id')}, function(data){
+                                if (jQuery.isEmptyObject(data)) {
+                                    $('#graph').text('Нет информации в базе данных!');
+                                } else {
+                                    network.setData(data)
+                                }
+                            });
+                        });
+ });
  </script>
  </body>
 </html>
