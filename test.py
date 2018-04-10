@@ -1,8 +1,11 @@
-from flask import Flask, render_template, request, url_for
 import os
+import json
+
+import shutil
+
 from app import History
 from graph import Graph
-import json
+from flask import Flask, render_template, request, url_for
 
 UPLOAD_DIR = "upload"
 DB_DIR = "db"
@@ -11,27 +14,13 @@ MAX_FILE_SIZE = 1024 * 1024
 
 app = Flask(__name__)
 
-hist = History(os.path.join(DB_DIR, 'db.csv'))
+hist = None
 
-@app.route("/", methods=["POST", "GET"])
+
+@app.route("/")
 def index():
-    args = {} 
-    if request.method == "POST":
-        file = request.files["file"]
-        if bool(file.filename):
-            print(file.filename)
-            file_bytes = file.read(MAX_FILE_SIZE)
-            args["file_size_error"] = len(file_bytes) == MAX_FILE_SIZE
-            if not args["file_size_error"]:
-                filename = file.filename
-                fullpath = os.path.join(UPLOAD_DIR, filename)
-                file.save(fullpath)
-                hist.add(fullpath)
-        args["method"] = "POST"
-    else:
-        args["method"] = "GET"
-    #print(url_for('static', filename='vis.js'))
-    return render_template("template.html", args=args, hist=hist.tolist())
+    return render_template("template.html", hist=hist.tolist())
+
 
 @app.route("/graph")
 def graph():
@@ -47,19 +36,37 @@ def graph():
         filename = hist[idx][0]
     except KeyError:
         raise Exception
-        #вернуть код ощтюбки
+        # вернуть код ощтюбки
     try:
-        g = Graph(filename)
-    except:
+        fullpath = os.path.join(UPLOAD_DIR, filename)
+        g = Graph(fullpath)
+    except Exception as e:
+        print(e)
         raise Exception
-        #вернуть код ощтюбки
+        # вернуть код ощтюбки
     return g.to_visjs()
+
 
 @app.route("/upload", methods=["POST"])
 def upload():
     file = request.files["file"]
-    print(file.filename)
-    return {}
+    if not file.filename:
+        raise Exception('no file name.')
+
+    fullpath = os.path.join(UPLOAD_DIR, file.filename)
+    file.save(fullpath)
+    hist.add(fullpath)
+    return "OK"
+
+
+def create_dir(root_dir):
+    if not os.path.exists(root_dir):
+        os.makedirs(root_dir)
+
 
 if __name__ == "__main__":
-    app.run()#debug=True
+    create_dir('db')
+    create_dir('upload')
+    hist = History(os.path.join(DB_DIR, 'db.csv'))
+
+    app.run(debug=True)

@@ -67,7 +67,7 @@
  <div id="graph" align="center"></div>
 
  <div id="form">
- <form enctype="multipart/form-data" method="post">
+ <form id="form_data" enctype="multipart/form-data" method="post">
    <div>
        <label for="image_uploads">Выберете файлы .xls, .xlsx</label>
        <input type="file" id="image_uploads" name="image_uploads" accept=".xls, .xlsx">
@@ -137,19 +137,17 @@
         //list.appendChild(elem)
         list.insertBefore(elem, list.children[0])
 
-        $.post('/upload', $('form').serialize(), function() {});
-        /*$.ajax({
-            data : $('form').serialize(),
-            type : 'POST',
-            url : '/upload',
-            contentType: false,
-            processData: false,
-            enctype: 'multipart/form-data',
-            dataType: 'json'
-        })*/
 
 
+       var file = $('#image_uploads')[0].files[0];
+       var formData = new FormData();
+       formData.append("file", file);
+
+        var request = new XMLHttpRequest();
+        request.open("POST", "/upload");
+        request.send(formData);
    });
+
    $('ul.ul_elements li').click(function() {
        $.getJSON("/graph", {'id' : $(this).attr('id')}, function(data){
          if (jQuery.isEmptyObject(data)) {

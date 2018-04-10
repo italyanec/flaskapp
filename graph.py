@@ -5,6 +5,7 @@ import json
 import copy
 from itertools import combinations
 
+
 class Graph:
     def __init__(self, filepath):
         data = pe.get_sheet(file_name=filepath, name_columns_by_row=0)
@@ -17,9 +18,9 @@ class Graph:
 
     def path_to_list_of_edges(self, path):
         list_of_edges = []
-        for i in range(len(path)-1):
+        for i in range(len(path) - 1):
             for edge in self.edges:
-                if path[i] in edge and path[i+1] in edge:
+                if path[i] in edge and path[i + 1] in edge:
                     list_of_edges.append(edge)
         return list_of_edges
 
@@ -34,21 +35,23 @@ class Graph:
                 all_pairs_of_nodes.append((nodes[i], nodes[j]))
 
         all_paths = []
-        #all_pairs_of_nodes = combinations(g.number_of_nodes(), 2)
+        # all_pairs_of_nodes = combinations(g.number_of_nodes(), 2)
         for pair in all_pairs_of_nodes:
             for path in nx.all_simple_paths(g, pair[0], pair[1]):
                 all_paths.append(path)
 
-        self.lp_nodes = all_paths[np.argmax(list(map(len,all_paths)))]
+        self.lp_nodes = all_paths[np.argmax(list(map(len, all_paths)))]
         self.lp_edges = self.path_to_list_of_edges(self.lp_nodes)
 
     def to_sigmajs(self):
         pass
 
     def to_visjs(self):
-        nodes = [{'id': i, 'label': str(i), 'shape': 'circle', 'color': 'green'} for i in set(self.nodes) & set(self.lp_nodes)]
-        nodes.extend([{'id': i, 'label': str(i), 'shape': 'circle', 'color': 'blue'} for i in set(self.nodes) ^ set(self.lp_nodes)])
-        #nodes = [{'id': i, 'label': i, 'shape': 'circle'} for i in set(self.nodes)]
+        nodes = [{'id': i, 'label': str(i), 'shape': 'circle', 'color': 'green'} for i in
+                 set(self.nodes) & set(self.lp_nodes)]
+        nodes.extend([{'id': i, 'label': str(i), 'shape': 'circle', 'color': 'blue'} for i in
+                      set(self.nodes) ^ set(self.lp_nodes)])
+        # nodes = [{'id': i, 'label': i, 'shape': 'circle'} for i in set(self.nodes)]
         edges_copy = copy.deepcopy(self.edges)
         [edges_copy.remove(edge) for edge in self.lp_edges]
         edges = []
@@ -61,7 +64,7 @@ class Graph:
 
         return json.dumps(data)
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     x = Graph('sample.xlsx')
     print(x.to_visjs())
