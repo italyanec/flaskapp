@@ -20,29 +20,23 @@ def index():
     return render_template("template.html", hist=hist.tolist())
 
 
+@app.route("/id")
+def get_id():
+    value = hist.history[-1]
+    return '<li id="{}">{}</li>'.format(value[0], ' '.join(value[1:]))
+
+
 @app.route("/graph")
 def graph():
-    idx = int(request.args.get('id', 0))
-    print(idx)
-    if idx < 0 or not idx:
-        idx = hist.lastid
-
-    if not idx:
-        return json.dumps({})
-
     try:
-        filename = hist[idx][0]
-    except KeyError:
-        raise Exception
-        # вернуть код ощтюбки
-    try:
+        idx = int(request.args.get('id', None))
+        filename = hist[idx][2]
         fullpath = os.path.join(UPLOAD_DIR, filename)
         g = Graph(fullpath)
-    except Exception as e:
-        print(e)
-        raise Exception
-        # вернуть код ощтюбки
-    return g.to_visjs()
+        return g.to_visjs()
+    except Exception as e:  # вернуть код ощтюбки
+        print("--", e)
+        return json.dumps({})
 
 
 @app.route("/upload", methods=["POST"])
@@ -55,12 +49,6 @@ def upload():
     file.save(fullpath)
     hist.add(fullpath)
     return "OK"
-
-@app.route("/id")
-def getid():
-    print(hist[hist.lastid])
-    print('<li id="{}">{}</li>'.format(hist.lastid, ' '.join(hist[hist.lastid][::-1])))
-    return '<li id="{}">{}</li>'.format(hist.lastid, ' '.join(hist[hist.lastid][::-1]))
 
 
 def create_dir(root_dir):

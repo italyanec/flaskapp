@@ -1,187 +1,127 @@
 <!--  --><!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Тестовое задание</title>
-  <script type="text/javascript" src="static/vis.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <style type="text/css">
-    html {
-      font-family: sans-serif;
-      border-top: 20px;
-    }
+    <meta charset="utf-8">
+    <title>Тестовое задание</title>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript" src="static/vis.js"></script>
+    <link type="text/css" rel="stylesheet" href="static/style.css" />
+</head>
+<body>
+<div id="graph" align="center"></div>
 
-    #graph {
-    outline-width: 3px;
-      width: 640px;
-      height: 400px;
-      border: 1px solid lightgray;
-      vertical-align: middle;
-      margin-bottom: 10px
-    }
-
-    #form {
-      width: 600px;
-      margin-left: 0;
-      padding: 20px;
-      border: 1px solid lightgray;
-      margin-bottom: 10px
-    }
-
-      form li, div > p {
-        background: white;
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 10px;
-        list-style-type: none;
-        border: 1px solid black;
-      }
-      form p, div p {
-        line-height: 32px;
-        padding-left: 10px;
-      }
-      form label, button {
-        background-color: white;
-        padding: 5px 10px;
-        border-radius: 5px;
-        border: 1px ridge black;
-        font-size: 0.8rem;
-        height: auto;
-      }
-      form label:hover, button:hover {
-        background-color: gray;
-        color: white;
-      }
-      form label:active, button:active {
-        background-color: black;
-        color: white;
-      }
-      #history {
-        width: 600px;
-        border: 1px solid lightgray;
-        padding: 20px;
-      }
-  </style>
- </head>
- <body>
- <div id="graph" align="center"></div>
-
- <div id="form">
- <form id="form_data" enctype="multipart/form-data" method="post">
-   <div>
-       <label for="image_uploads">Выберете файлы .xls, .xlsx</label>
-       <input type="file" id="image_uploads" name="image_uploads" accept=".xls, .xlsx">
-   </div>
-   <div class="preview">
-       <p>Нет выбранных файлов</p>
-   </div>
- </form>
- <button>Отправить</button>
- </div>
- <div id="history">
- <p align="center">История загрузки:</p>
- <ul>
-   {% if hist|length < 1 %}
-     <li>Здесь пока ничего нет</li>
-   {% else %}
-     {% for elem in hist %}
-     <li id="{{elem[0]}}">{{ elem[1] }} {{ elem[2] }}</li>
-     {% endfor %}
-   {% endif %}
- </ul>
- </div>
- <script>
- $(document).ready(function() {
-
-   selul = $('ul li')
-
-   var container = document.getElementById('graph');
-   var network = new vis.Network(container, {}, {} );
-   $.getJSON("/graph", {'id' : -1}, function(data){
-     if (jQuery.isEmptyObject(data)) {
-       $('#graph').text('Нет информации в базе данных!');
-     } else {
-       network.setData(data)
-     }
-   });
-   var input = document.querySelector('input');
-   var preview = document.querySelector('.preview');
-
-   input.style.visibility = 'hidden';
-
-   input.addEventListener('change', function() {
-     var curFiles = input.files;
-
-     if(curFiles.length === 0) {
-        preview.children[0].textContent = 'Файл не выбран';
-     } else {
-        preview.children[0].textContent = curFiles[0].name;
-     }
-   });
-
-   var submit = document.querySelector('button');
-   submit.addEventListener('click', function() {
-
-        var curFiles = input.files;
-
-        if (curFiles.length === 0) {
-            return;
-        }
-        if (curFiles.size > 1024*1024) {
-            preview.children[0].textContent = 'Размер файла превышает 1 МБ';
-            return;
-        }
-
-       var file = $('#image_uploads')[0].files[0];
-       var formData = new FormData();
-       formData.append("file", file);
-
-        var request = new XMLHttpRequest();
-        request.open("POST", "/upload");
-        request.send(formData);
-        request.onreadystatechange = function() {
-          if (this.status == 200) {
-            if (this.readyState == 4) {
-                preview.children[0].textContent = 'Файл успешно загружен'
-                 $("form")[0].reset();
-                var request = new XMLHttpRequest();
-                request.open("GET", "/id", true);
-                request.send()
-                request.onreadystatechange = function() {
-                if (this.status == 200) {
-                    if (this.readyState == 4) {
-                        var list = document.querySelector('ul');
-                        $('ul').prepend(this.responseText);
-                        //var elem = document.createElement('li');
-                        //elem.textContent = 'ok'//this.responseText
-                        //elem.setAttribute("id", 54);
-                        //list.appendChild(elem)
-                        //list.insertBefore(elem, list.children[0])
-                        $('ul li').click(function() {
-                            $.getJSON("/graph", {'id' : $(this).attr('id')}, function(data){
-                                if (jQuery.isEmptyObject(data)) {
-                                    $('#graph').text('Нет информации в базе данных!');
-                                } else {
-                                    network.setData(data)
-                                }
-                            });
-                        });
-                    }
-                }}
+<div id="form">
+    <form id="form_data" enctype="multipart/form-data" method="post">
+        <div>
+            <label for="image_uploads">Выберете файлы .xls, .xlsx</label>
+            <input type="file" id="image_uploads" name="image_uploads" accept=".xls, .xlsx">
+        </div>
+        <div class="preview">
+            <p>Нет выбранных файлов</p>
+        </div>
+    </form>
+</div>
+<div id="history">
+    <p id="hist" align="center">История загрузки: (загружено {{ hist|length }}) </p>
+    <ul>
+        {% for elem in hist %}
+            <li id="{{elem[0]}}">{{ elem[1] }} {{ elem[2] }}</li>
+        {% endfor %}
+    </ul>
+</div>
+<script>
+    function get_data(id)
+    {
+        $.getJSON("/graph", {'id' : id},
+            function(data){
+                var container = $('#graph')[0];
+                if (jQuery.isEmptyObject(data)) {
+                    container.text('Нет информации в базе данных!');
+                } else {
+                    var network = new vis.Network(container, {}, {} );
+                    network.setData(data)
+                }
             }
-          }
+        );
+    }
+
+    function update_event()
+    {
+        $('ul li').click(
+            function() {
+                get_data($(this).attr('id'));
+
+                var elements = $('ul li');
+                for (var i = 0; i< elements.length; i++) {
+                   elements[i].style  = "";
+                }
+
+                this.style = "background-color: red;"
+            }
+        );
+    }
+
+
+    $(document).ready(function() {
+        update_event();
+
+        var elements = $('ul li');
+        if(elements.length > 0)
+        {
+            elements[elements.length - 1].click();
         }
-   });
-$('ul li').click(function() {
-                            $.getJSON("/graph", {'id' : $(this).attr('id')}, function(data){
-                                if (jQuery.isEmptyObject(data)) {
-                                    $('#graph').text('Нет информации в базе данных!');
-                                } else {
-                                    network.setData(data)
-                                }
-                            });
-                        });
- });
- </script>
- </body>
+
+        var input = document.querySelector('input');
+        var preview = document.querySelector('.preview');
+        input.style.visibility = 'hidden';
+
+        input.addEventListener('change', function() {
+            var curFiles = input.files;
+
+            if(curFiles.length === 0) {
+                preview.children[0].textContent = 'Файл не выбран';
+                return;
+            }
+
+            var file = curFiles[0];
+
+            if (file.size > 1024*1024) {
+                preview.children[0].textContent = 'Размер файла <' + file.name + '> превышает 1 МБ';
+                return;
+            }
+
+            preview.children[0].textContent = 'Загружаем файла <' + file.name + '> ...';
+
+            var formData = new FormData();
+            formData.append("file", file);
+
+            var request = new XMLHttpRequest();
+            request.open("POST", "/upload");
+            request.send(formData);
+            request.onreadystatechange = function() {
+                if (this.status == 200 && this.readyState == 4) {
+                    preview.children[0].textContent = 'Файл <' + file.name + '> успешно загружен';
+                    $("form")[0].reset();
+
+                    var request = new XMLHttpRequest();
+                    request.open("GET", "/id", true);
+                    request.send();
+                    request.onreadystatechange = function() {
+                        if (this.status == 200 && this.readyState == 4) {
+                            $('ul').prepend(this.responseText);
+                            $('#hist')[0].textContent = 'История загрузки: (загружено ' + $('ul li').length + ')'
+                            update_event();
+                            get_data( $('ul li')[0].id);
+                        }
+                    }
+                }
+                else {
+                    preview.children[0].textContent = 'Файл <' + file.name + '> не загружен';
+                }
+            }
+
+        });
+    });
+</script>
+</body>
 </html>
