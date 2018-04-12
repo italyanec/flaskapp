@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Тестовое задание</title>
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript" src="static/jquery-1.11.3.min.js"></script>
     <script type="text/javascript" src="static/vis.js"></script>
     <link type="text/css" rel="stylesheet" href="static/style.css" />
 </head>
@@ -51,14 +51,9 @@
             function() {
                 get_data($(this).attr('id'));
 
-                var elements = $('ul li');
-                for (var i = 0; i< elements.length; i++) {
-                   elements[i].style  = "";
-                }
-
-                this.style = "background-color: red;"
-            }
-        );
+                $('ul li').css("background-color", "")
+                $(this).css("background-color", "red")
+        });
     }
 
 
@@ -68,7 +63,7 @@
         var elements = $('ul li');
         if(elements.length > 0)
         {
-            elements[elements.length - 1].click();
+            elements[0].click();
         }
 
         var input = document.querySelector('input');
@@ -96,22 +91,24 @@
             formData.append("file", file);
 
             var request = new XMLHttpRequest();
-            request.open("POST", "/upload");
+            request.open("POST", "/upload", true);
             request.send(formData);
             request.onreadystatechange = function() {
                 if (this.status == 200 && this.readyState == 4) {
                     preview.children[0].textContent = 'Файл <' + file.name + '> успешно загружен';
+                    console.log(file.name)
                     $("form")[0].reset();
 
-                    var request = new XMLHttpRequest();
-                    request.open("GET", "/id", true);
-                    request.send();
-                    request.onreadystatechange = function() {
+                    var request2 = new XMLHttpRequest();
+                    request2.open("GET", "/id", true);
+                    request2.send();
+                    request2.onreadystatechange = function() {
                         if (this.status == 200 && this.readyState == 4) {
+                            console.log(this.responseText)
                             $('ul').prepend(this.responseText);
                             $('#hist')[0].textContent = 'История загрузки: (загружено ' + $('ul li').length + ')'
                             update_event();
-                            get_data( $('ul li')[0].id);
+                            $('ul li:first').click();
                         }
                     }
                 }
@@ -125,3 +122,4 @@
 </script>
 </body>
 </html>
+

@@ -23,6 +23,7 @@ def index():
 @app.route("/id")
 def get_id():
     value = hist.history[-1]
+    print(value)
     return '<li id="{}">{}</li>'.format(value[0], ' '.join(value[1:]))
 
 
