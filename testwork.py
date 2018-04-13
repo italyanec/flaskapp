@@ -46,4 +46,4 @@ def upload():
 if __name__ == "__main__":
 
     storage = History(app.config['DATABASE'])
-    app.run(debug=True)
+    app.run(port=2016, debug=True)
