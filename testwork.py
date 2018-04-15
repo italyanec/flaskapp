@@ -18,15 +18,14 @@ def index():
 
 @app.route("/id")
 def get_id():
-    value = storage.get_metadata_by_id(-1)
-    print(value)
+    value = storage.get_metadata_by_id(-1) # return last one
     return '<li id="{}">{}</li>'.format(value[0], ' '.join(value[1:]))
 
 
 @app.route("/graph")
 def graph():
     try:
-        idx = int(request.args.get('id', -1))
+        idx = int(request.args.get('id', None))
         return storage.get_graph_by_id(idx)
     except Exception as e:  # вернуть код ощтюбки
         print("Error in <graph()> :", e)

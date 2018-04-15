@@ -1,12 +1,8 @@
 import pyexcel
-import networkx
-import numpy
-import json
-import copy
 import sqlite3
 
-from itertools import combinations
 from datetime import datetime
+from graph import Graph
 
 
 def parse(file):
@@ -23,52 +19,6 @@ def parse(file):
     return {'nodes': nodes, 'edges': edges}
 
 
-class Graph:
-    def __init__(self, edges, nodes):
-        self._edges = edges
-        self._nodes = nodes
-
-        self._find_longest_path()
-
-    def _path_to_list_of_edges(self, path):
-        list_of_edges = []
-        for i in range(len(path) - 1):
-            for edge in self._edges:
-                if path[i] in edge and path[i + 1] in edge:
-                    list_of_edges.append(edge)
-        return list_of_edges
-
-    def _find_longest_path(self):
-        g = networkx.Graph()
-        g.add_edges_from(self._edges)
-
-        all_paths = []
-        for pair in combinations(g.nodes, 2):
-            for path in networkx.all_simple_paths(g, pair[0], pair[1]):
-                all_paths.append(path)
-
-        self._lp_nodes = all_paths[numpy.argmax(list(map(len, all_paths)))]
-        self._lp_edges = self._path_to_list_of_edges(self._lp_nodes)
-
-    def to_visjs(self):
-        nodes = [{'id': i, 'label': str(i), 'shape': 'circle', 'color': 'green'} for i in
-                 set(self._nodes) & set(self._lp_nodes)]
-        nodes.extend([{'id': i, 'label': str(i), 'shape': 'circle', 'color': 'blue'} for i in
-                      set(self._nodes) ^ set(self._lp_nodes)])
-        # nodes = [{'id': i, 'label': i, 'shape': 'circle'} for i in set(self.nodes)]
-        edges_copy = copy.deepcopy(self._edges)
-        [edges_copy.remove(edge) for edge in self._lp_edges]
-        edges = []
-        for edge in edges_copy:
-            edges.append({'from': edge[0], 'to': edge[1], 'color': {'color': 'blue'}})
-        for edge in self._lp_edges:
-            edges.append({'from': edge[0], 'to': edge[1], 'color': {'color': 'green'}})
-        data = {'nodes': nodes, 'edges': edges}
-
-        return json.dumps(data)
-
-
-# https://habrahabr.ru/post/321510/
 class History:
     def __init__(self, dbname):
         self._dbname = dbname
@@ -88,7 +38,7 @@ class History:
         conn = sqlite3.connect(self._dbname)
         cursor = conn.cursor()
         cursor.execute("INSERT INTO Graphs (NET, FILENAME, DATETIME) VALUES ( ?, ?, ? )",
-                                           (net, file.filename, time))
+                       (net, file.filename, time))
         conn.commit()
         conn.close()
 
